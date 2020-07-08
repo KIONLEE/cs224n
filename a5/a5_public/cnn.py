@@ -9,12 +9,9 @@ import torch
 import torch.nn as nn
 
 class CNN(nn.Module):
-    pass
+    # pass
     # Remember to delete the above 'pass' after your implementation
     ### YOUR CODE HERE for part 1g
-
-
-
 
     ### END YOUR CODE
 
