@@ -39,10 +39,17 @@ class ModelEmbeddings(nn.Module):
         super(ModelEmbeddings, self).__init__()
 
         ### YOUR CODE HERE for part 1h
+        self.word_embed_size = word_embed_size # e_word
+        self.vocab = vocab
+        self.e_char = 50
 
+        self.embedding = nn.Embedding(len(self.vocab.char2id), self.e_char, padding_idx=vocab.char_pad)
+        self.convolution = CNN(self.e_char, self.word_embed_size)
+        self.highway = Highway(self.word_embed_size)
+        self.dropout = nn.Dropout(p=0.3)
         ### END YOUR CODE
 
-    def forward(self, input):
+    def forward(self, input): # x_padded => x_word_emb
         """
         Looks up character-based CNN embeddings for the words in a batch of sentences.
         @param input: Tensor of integers of shape (sentence_length, batch_size, max_word_length) where
@@ -53,5 +60,15 @@ class ModelEmbeddings(nn.Module):
         """
         ### YOUR CODE HERE for part 1h
 
+        x_emb = self.embedding(input) # (sentence_length, batch_size, max_word_length, e_char)
+        src_len, batch_size, m_word, e_char = x_emb.shape
+        x_reshaped = x_emb.transpose(2,3) # (src_len, batch_size, e_char, m_word)
+        x_reshaped = x_reshaped.reshape([src_len * batch_size, e_char, m_word]) # (src_len * batch_size, e_char, m_word)
+        x_conv_out = self.convolution(x_reshaped) # (src_len * batch_size, e_word)
+        x_highway = self.highway(x_conv_out) # (src_len * batch_size, e_word)
+        x_dropbout = self.dropout(x_highway) # (src_len * batch_size, e_word)
+        output = x_dropbout.reshape([src_len, batch_size, self.word_embed_size]) # (sentence_length, batch_size, word_embed_size)
+
+        return output
         ### END YOUR CODE
 

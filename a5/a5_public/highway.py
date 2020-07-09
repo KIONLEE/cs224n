@@ -26,12 +26,12 @@ class Highway(nn.Module):
     def forward(self, x_conv_out): # x_conv_out => x_highway
         """ Forward pass of Highway.
 
-        @param x_conv_out (Tensor): tensor from convolutional layer, shape (e_word,)
+        @param x_conv_out (Tensor): tensor from convolutional layer, shape (batch_size, e_word)
         
-        @returns x_highway (Tensor): output tensor after highway layer, shape (e_word,)
+        @returns x_highway (Tensor): output tensor after highway layer, shape (batch_size, e_word)
         """
-        x_proj = self.ReLU(self.proj_layer(x_conv_out)) # (e_word,)
-        x_gate = self.sigmoid(self.gate_layer(x_conv_out)) # (e_word,)
+        x_proj = self.ReLU(self.proj_layer(x_conv_out)) # (batch_size, e_word)
+        x_gate = self.sigmoid(self.gate_layer(x_conv_out)) # (batch_size, e_word)
         x_highway = x_gate * x_proj + (1 - x_gate) * x_conv_out
 
         return x_highway

@@ -19,7 +19,7 @@ class CNN(nn.Module):
         @param e_word (int): Output embedding size of target word.
         """
         super(CNN, self).__init__()
-        self.conv = nn.Conv1d(in_channels=e_char, out_channels=e_word, , kernel_size=5, padding=1)
+        self.conv = nn.Conv1d(in_channels=e_char, out_channels=e_word, kernel_size=5, padding=1)
         self.ReLU = nn.ReLU() # 'inplace' default: False
         self.maxpool = nn.AdaptiveMaxPool1d(output_size=1)
 
@@ -31,7 +31,7 @@ class CNN(nn.Module):
         @returns x_conv_out (Tensor): output tensor after highway layer, shape (src_len * batch_size, e_word)
         """
         relu = self.ReLU(self.conv(x_reshaped)) # (src_len * b, e_word, m_word - kernel_size + 1)
-        x_conv_out = self.maxpool(relu) # (src_len * b, e_word)
+        x_conv_out = self.maxpool(relu).squeeze(-1) # (src_len * b, e_word)
 
         return x_conv_out
 
