@@ -59,7 +59,6 @@ class ModelEmbeddings(nn.Module):
             CNN-based embeddings for each word of the sentences in the batch
         """
         ### YOUR CODE HERE for part 1h
-
         x_emb = self.embedding(input) # (sentence_length, batch_size, max_word_length, e_char)
         src_len, batch_size, m_word, e_char = x_emb.shape
         x_reshaped = x_emb.transpose(2,3) # (src_len, batch_size, e_char, m_word)

@@ -1,1 +1,4 @@
 .vscode
+/en_es_data
+*.bin
+*.optim
