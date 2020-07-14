@@ -161,9 +161,9 @@ class VocabEntry(object):
         ###         https://pytorch.org/docs/stable/tensors.html#torch.Tensor.contiguous
         ###         https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
         sents_charindices = self.words2charindices(sents)
-        sents_padded = torch.tensor(pad_sents_char(sents_charindices, self.char_pad), dtype=torch.long, device=device) # (batch_size, max_sentence_length, max_word_length)
-        [batch_size, max_sentence_length, max_word_length] = sents_padded.size()
-        sents_var = sents_padded.contiguous().view([max_sentence_length, batch_size, max_word_length])
+        sents_padded = torch.tensor(pad_sents_char(sents_charindices, self.char_pad), device=device) # (batch_size, max_sentence_length, max_word_length)
+        sents_var = sents_padded.transpose(0, 1)
+
         return sents_var
         ### END YOUR CODE
 
