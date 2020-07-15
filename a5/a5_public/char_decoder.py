@@ -23,6 +23,8 @@ class CharDecoder(nn.Module):
         self.char_output_projection = nn.Linear(hidden_size, len(self.target_vocab.char2id))
         self.decoderCharEmb = nn.Embedding(len(self.target_vocab.char2id), char_embedding_size,
                                            padding_idx=self.target_vocab.char_pad)
+        self.softmax = nn.Softmax(dim=-1)
+        self.criterion = nn.CrossEntropyLoss()
 
     def forward(self, input, dec_hidden=None):
         """ Forward pass of character decoder.
@@ -58,6 +60,12 @@ class CharDecoder(nn.Module):
         ###       - Carefully read the documentation for nn.CrossEntropyLoss and our handout to see what this criterion have already included:
         ###             https://pytorch.org/docs/stable/nn.html#crossentropyloss
 
+        input = char_sequence[:-1] # (length-1, batch_size)
+        output = char_sequence[1:] # (length-1, batch_size)
+        scores, dec_hidden = self.forward(input, dec_hidden) # scores: (length-1, batch_size, self.vocab_size)
+        loss_cross_entropy = self.criterion(self.softmax(scores).permute(1, 2, 0), output.transpose(1,0))
+
+        return loss_cross_entropy
         ### END YOUR CODE
 
     def decode_greedy(self, initialStates, device, max_length=21):
@@ -79,6 +87,7 @@ class CharDecoder(nn.Module):
         ###      - You may find torch.argmax or torch.argmax useful
         ###      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
         ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
+
 
         ### END YOUR CODE
 
