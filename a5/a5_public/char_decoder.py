@@ -87,7 +87,33 @@ class CharDecoder(nn.Module):
         ###      - You may find torch.argmax or torch.argmax useful
         ###      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
         ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
+        
+        # START_TOKEN = '{'
+        # END_TOKEN = '}'
+        START_TOKEN_INDEX = self.target_vocab.start_of_word
+        END_TOKEN_INDEX = self.target_vocab.end_of_word
+        batch_size = initialStates[0].shape[1]
 
+        output_words = torch.zeros([max_length, batch_size], device=device) # (max_length, batch_size)
+        current_char = torch.tensor([[START_TOKEN_INDEX] for i in range(batch_size)], device=device).t() # (length, batch_size), length = 1
+        dec_hidden = initialStates
 
+        for j in range(max_length):
+            score, dec_hidden = self.forward(current_char, dec_hidden) # score: (length, batch_size, self.vocab_size)
+            prob = self.softmax(score) # (length, batch_size, self.vocab_size)
+            current_char = torch.argmax(prob, dim=-1) # (length, batch_size)
+            output_words[j, :] = current_char
+
+        decodedWords = ['' for i in range(batch_size)]
+        for b in range(batch_size):
+            decodedWord = decodedWords[b]
+            c_indices = output_words[:, b] # (max_length, )
+            for c in c_indices:
+                if c == END_TOKEN_INDEX:
+                    break
+                decodedWord += self.target_vocab.id2char[c.item()]
+            decodedWords[b] = decodedWord
+
+        return decodedWords
         ### END YOUR CODE
 
