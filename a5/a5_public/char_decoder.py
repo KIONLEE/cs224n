@@ -24,7 +24,7 @@ class CharDecoder(nn.Module):
         self.decoderCharEmb = nn.Embedding(len(self.target_vocab.char2id), char_embedding_size,
                                            padding_idx=self.target_vocab.char_pad)
         self.softmax = nn.Softmax(dim=-1)
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.CrossEntropyLoss(ignore_index=self.target_vocab.char_pad , reduction='sum')
 
     def forward(self, input, dec_hidden=None):
         """ Forward pass of character decoder.
@@ -63,7 +63,7 @@ class CharDecoder(nn.Module):
         input = char_sequence[:-1] # (length-1, batch_size)
         output = char_sequence[1:] # (length-1, batch_size)
         scores, dec_hidden = self.forward(input, dec_hidden) # scores: (length-1, batch_size, self.vocab_size)
-        loss_cross_entropy = self.criterion(self.softmax(scores).permute(1, 2, 0), output.transpose(1,0))
+        loss_cross_entropy = self.criterion(scores.reshape([-1, scores.shape[-1]]), output.reshape(-1))
 
         return loss_cross_entropy
         ### END YOUR CODE
@@ -104,15 +104,15 @@ class CharDecoder(nn.Module):
             current_char = torch.argmax(prob, dim=-1) # (length, batch_size)
             output_words[j, :] = current_char
 
-        decodedWords = ['' for i in range(batch_size)]
+        decodedWords = []
         for b in range(batch_size):
-            decodedWord = decodedWords[b]
+            decodedWord = ''
             c_indices = output_words[:, b] # (max_length, )
             for c in c_indices:
                 if c == END_TOKEN_INDEX:
                     break
                 decodedWord += self.target_vocab.id2char[c.item()]
-            decodedWords[b] = decodedWord
+            decodedWords.append(decodedWord)
 
         return decodedWords
         ### END YOUR CODE
